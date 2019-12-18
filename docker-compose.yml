@@ -1,0 +1,80 @@
+version: "3"
+services:
+    mysql:
+        image: mariadb:10.4.8-bionic
+        container_name: librenms_mysql
+        hostname: mysql
+        volumes:
+            - /home/pirate/docker/volumes/librenms_mysql:/var/lib/mysql
+        networks:
+            - librenms
+        environment:
+            - TZ=Europe/Paris
+            - MYSQL_ROOT_PASSWORD=passwd
+            - MYSQL_DATABASE=librenms
+            - MYSQL_USER=librenms
+            - MYSQL_PASSWORD=passwd
+        restart: on-failure
+
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin:edge-4.9
+        hostname: phpmyadmin
+        container_name: librenms_phpmyadmin
+        ports:
+            - "8081:80"
+        depends_on:
+            - mysql
+        networks:
+            - librenms
+        environment:
+            - TZ=Europe/Paris
+            - PMA_ARBITRARY=1
+        restart: on-failure
+
+    librenms:
+        image: librenms:1.57-bionic
+        hostname: librenms
+        container_name: librenms_librenms
+        volumes:
+            - /home/pirate/docker/volumes/librenms_librenms/config.php:/opt/librenms/config.php
+            - /home/pirate/docker/volumes/librenms_librenms/librenms:/etc/cron.d/librenms
+            - /home/pirate/docker/volumes/librenms_librenms/hosts:/etc/hosts
+            - /home/pirate/docker/volumes/librenms_librenms/logo.png:/opt/librenms/html/images/custom/logo.png
+            - /home/pirate/docker/volumes/librenms_librenms/rrd:/opt/librenms/rrd
+            - /home/pirate/docker/volumes/librenms_librenms/configs:/opt/librenms/html/plugins/Weathermap/configs
+            - /home/pirate/docker/volumes/librenms_librenms/output:/opt/librenms/html/plugins/Weathermap/output
+        ports:
+            - "8082:80"
+            - "514:514/udp"
+            - "162:162/udp"
+        depends_on:
+            - mysql
+        environment:
+            - TZ=Europe/Paris
+            - INIT_LIBRENMS=true
+        networks:
+            - librenms
+        restart: on-failure
+
+    front:
+        image: front:0.1-bionic
+        hostname: front
+        container_name: librenms_front
+        volumes:
+            - /home/pirate/docker/volumes/librenms_front/nginx/html:/var/www/html
+            - /home/pirate/docker/volumes/librenms_librenms/rrd:/var/www/rrd
+        ports:
+            - "8083:80"
+        depends_on:
+            - mysql
+            - librenms
+        networks:
+            - librenms
+        environment:
+            - TZ=Europe/Paris
+        restart: on-failure
+
+networks:
+    librenms:
+        external:
+            name: librenms_librenms

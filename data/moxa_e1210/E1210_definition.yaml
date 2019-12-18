@@ -1,0 +1,6 @@
+os: E1210
+text: 'Moxa IO E1210'
+type: environment
+discovery:
+    - sysObjectID:
+        - .1.3.6.1.4.1.8691.10.1210

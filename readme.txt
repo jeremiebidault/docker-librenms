@@ -1,36 +1,30 @@
-# LibreNMS on docker
+# includes few custom modifications patch for librenms :
+#    - dantherm CC3000
+#    - juniper sessions
+#    - moxa E1210
+#    - trap dispatcher in case no mib is provided
+#
+# in addition it not just installs librenms, it also includes these packages and pre config for :
+#    - rsyslog + config
+#    - snmpd + config
+#    - snmptrapd + config
 
-includes few custom modifications patch for librenms :
+################################################################################
+#### THIS FOLLOWING MODEL IS JUST AN EXAMPLE AND MUST NOT BE TAKEN AS IT IS ####
+####                 !!!! MOD COMMANDS BEFORE ANY USE !!!!                  ####
+################################################################################
 
-* dantherm CC3000
-* juniper sessions
-* moxa E1210
-* trap dispatcher in case no mib is provided
+#### build docker image ####
 
-in addition it not just installs librenms, it also includes these packages and pre config for :
+docker build -t librenms:1.57-bionic .
 
-* rsyslog + config
-* snmpd + config
-* snmptrapd + config
+#### docker run way with ipv6 support ####
 
-## build docker image
+# build network
+docker network create --driver bridge --subnet=172.200.6.0/24 --ipv6 --subnet=1234:1234:1234:1234::/80 librenms_librenms
 
-```
-$ docker build -t librenms:1.57-bionic .
-```
-
-## docker run way with ipv6 support
-
-build network
-
-```
-$ docker network create --driver bridge --subnet=172.200.6.0/24 --ipv6 --subnet=1234:1234:1234:1234::/80 librenms_librenms
-```
-
-launch mysql container
-
-```
-$ docker run \
+# launch mysql container
+docker run \
 --hostname mysql \
 --name librenms_mysql \
 --restart on-failure \
@@ -44,11 +38,8 @@ $ docker run \
 -e MYSQL_PASSWORD=passwd \
 -v /home/pirate/docker/volumes/librenms_mysql:/var/lib/mysql \
 -d hypriot/rpi-mysql
-```
 
-launch phpmyadmin container
-
-```
+# launch phpmyadmin container
 $ docker run \
 --hostname phpmyadmin \
 --name librenms_phpmyadmin \
@@ -60,11 +51,8 @@ $ docker run \
 -e TZ=Europe/Paris \
 -e PMA_ARBITRARY=1 \
 -d ebspace/armhf-phpmyadmin
-```
 
-launch librenms container
-
-```
+# launch librenms container
 $ docker run \
 --hostname librenms \
 --name librenms_librenms \
@@ -85,12 +73,9 @@ $ docker run \
 -v /home/pirate/docker/volumes/librenms_librenms/configs:/opt/librenms/html/plugins/Weathermap/configs \
 -v /home/pirate/docker/volumes/librenms_librenms/output:/opt/librenms/html/plugins/Weathermap/output \
 -d librenms:1.57-bionic
-```
 
-launch front container
-
-```
-$ docker run \
+# launch front container
+docker run \
 --hostname front \
 --name librenms_front \
 --restart on-failure \
@@ -102,24 +87,14 @@ $ docker run \
 -v /home/pirate/docker/volumes/librenms_front/nginx/html:/var/www/html \
 -v /home/pirate/docker/volumes/librenms_librenms/rrd:/var/www/rrd \
 -d front:0.1-bionic
-```
 
-## docker compose way with ipv6 support
+#### docker compose way with ipv6 support ####
 
-build network
+# build network
+docker network create --driver bridge --subnet=172.200.6.0/24 --ipv6 --subnet=1234:1234:1234:1234::/80 librenms_librenms
 
-```
-$ docker network create --driver bridge --subnet=172.200.6.0/24 --ipv6 --subnet=1234:1234:1234:1234::/80 librenms_librenms
-```
+# go to docker-compose path
+cd /path-to-docker-compose/
 
-go to docker-compose path
-
-```
-$ cd /path-to-docker-compose/
-```
-
-launch all your containers at the same time
-
-```
-$ docker-compose up -d
-```
+# launch all your containers at the same time
+docker-compose up -d

@@ -1,0 +1,6 @@
+os: CC3000
+text: 'Dantherm CC3000'
+type: environment
+discovery:
+    - sysObjectID:
+        - .1.3.6.1.4.1.0
