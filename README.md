@@ -12,6 +12,7 @@ in addition it not just installs librenms, it also includes these packages and p
 * rsyslog + config
 * snmpd + config
 * snmptrapd + config
+* weathermap + config
 
 ## build docker image
 
